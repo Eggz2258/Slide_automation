@@ -4,12 +4,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import requests
 
 
 options = Options()
 # Try normal first, then headless if it still crashes
 #options.add_argument("--headless=new")
 options.debugger_address = "127.0.0.1:9222"
+
+prefs = {
+    "download.default_directory": r"C:\Downloads",   # your folder
+    "download.prompt_for_download": False,
+    "plugins.always_open_pdf_externally": True       # don't open in browser, download instead
+}
+options.add_experimental_option("prefs", prefs)
 
 driver = webdriver.Edge(options=options)
 driver.get("https://www.pesuacademy.com/Academy/s/studentProfilePESU")
@@ -33,7 +41,7 @@ input()
 time.sleep(2)
 course = driver.find_element(By.XPATH,'//*[@id="menuTab_653"]/a/span[2]').click()
 time.sleep(3)
-afll = driver.find_element(By.XPATH, '//*[@id="rowWiseCourseContent_20968"]/td[2]').click()
+afll = driver.find_element(By.XPATH, '//*[@id="rowWiseCourseContent_20965"]/td[2]').click()
 time.sleep(3)
 
 Table = driver.find_element(By.XPATH, '//*[@id="CourseContentId"]/div/div[1]/table')
@@ -41,7 +49,7 @@ time.sleep(1)
 nums = Table.find_element(By.TAG_NAME,"tbody").find_elements(By.TAG_NAME,'tr')
 
 
-
+j =0
 for i in range(len(nums)):
     time.sleep(2)
     e = driver.find_element(By.XPATH, '//*[@id="CourseContentId"]/div/div[1]/table').find_element(By.TAG_NAME,"tbody").find_elements(By.TAG_NAME,'tr')
@@ -53,12 +61,34 @@ for i in range(len(nums)):
     time.sleep(2)    
     slides_btn =driver.find_element(By.ID, "contentType_2")
     clic(slides_btn)
-    try:
-        time.sleep(1)
-        btn = driver.find_element(By.CLASS_NAME,"link-preview")
-        clic(btn)
-    except:
-        pass
+
+    time.sleep(1)
+    btns = driver.find_elements(By.CLASS_NAME,"link-preview")
+
+    for btn in btns:
+        print(len(btn.find_elements(By.TAG_NAME,"iframe")))
+        if len(btn.find_elements(By.TAG_NAME,"iframe")) >0:
+            print("in")
+            time.sleep(1)
+            btn = btn.find_element(By.TAG_NAME,"a")
+            clic(btn)
+            time.sleep(1)
+            link = driver.find_element(By.TAG_NAME,"iframe").get_attribute("src")
+            # driver.get(link)
+            # driver.print_page()
+            cookies = {c['name']: c['value'] for c in driver.get_cookies()}
+
+            resp = requests.get(link, cookies=cookies)
+
+            with open(f"./Outputs/output{j}.pdf", "wb") as f:
+                f.write(resp.content)
+
+            time.sleep(1)
+            print("File saved as output.pdf")
+            j+=1
+        else:
+                clic(btn)
+
     time.sleep(1)
 # driver.find_element(By.CLASS_NAME,"pull-left").click()
     
