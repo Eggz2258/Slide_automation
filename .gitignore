@@ -1,2 +1,4 @@
 msedgedriver.exe
 /Outputs
+venv_linux
+.venv

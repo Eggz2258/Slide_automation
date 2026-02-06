@@ -8,7 +8,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 import time
 import requests
 from os import path
-from PyPDF2 import PdfWriter
 
 
 
